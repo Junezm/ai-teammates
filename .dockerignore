@@ -1,0 +1,6 @@
+# Agent tooling and local artifacts — not needed in the build
+.agents/
+.claude/
+.codebuddy/
+.firecrawl/
+railway-env.sh
