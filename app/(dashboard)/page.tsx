@@ -1,5 +1,4 @@
 import { PlusIcon } from "lucide-react"
-import { UserButton } from "@clerk/nextjs"
 import { auth } from "@clerk/nextjs/server"
 import { nanoid } from "nanoid"
 
@@ -21,9 +20,6 @@ export default async function Page() {
 
   return (
     <div className="relative flex min-h-svh flex-col">
-      <div className="absolute top-4 right-4">
-        <UserButton />
-      </div>
       <Empty className="flex-1">
         <EmptyHeader>
           <EmptyMedia>
