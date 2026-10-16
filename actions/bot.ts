@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache"
 
 import { db } from "@/db"
 import { bots } from "@/db/schema"
-import { botInsertSchema } from "@/db/validation"
+import { botFormSchema } from "@/db/validation"
 
 export type CreateBotResult =
   | { success: true }
@@ -26,7 +26,7 @@ export async function createBot(input: unknown): Promise<CreateBotResult> {
     return { success: false, error: "You must be signed in." }
   }
 
-  const parsed = botInsertSchema.safeParse(input)
+  const parsed = botFormSchema.safeParse(input)
   if (!parsed.success) {
     console.error(
       "[createBot] validation failed:",
