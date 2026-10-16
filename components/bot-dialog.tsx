@@ -39,15 +39,28 @@ const JOB_PRESETS = [
   "Tutor",
 ] as const
 
+function emptyBotForm(): BotFormValues {
+  return { avatar: nanoid(), name: "", job: "", instructions: "" }
+}
+
 export function BotDialog({ children }: { children: React.ReactElement }) {
   const [open, setOpen] = useState(false)
 
   const form = useForm<BotFormValues>({
     resolver: zodResolver(botFormSchema),
-    defaultValues: { avatar: nanoid(), name: "", job: "" },
+    defaultValues: emptyBotForm(),
   })
   const avatar = form.watch("avatar")
   const { isSubmitting, errors } = form.formState
+
+  // Every close path (submit, cancel, Esc, overlay) funnels through here so the
+  // form never carries stale values into the next open.
+  function handleOpenChange(next: boolean) {
+    setOpen(next)
+    if (!next) {
+      form.reset(emptyBotForm())
+    }
+  }
 
   function shuffle() {
     form.setValue("avatar", nanoid())
@@ -63,12 +76,11 @@ export function BotDialog({ children }: { children: React.ReactElement }) {
       title: "Bot created",
       description: `${values.name} is ready.`,
     })
-    form.reset({ avatar: nanoid(), name: "", job: "" })
-    setOpen(false)
+    handleOpenChange(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={children} />
       <DialogContent>
         <DialogHeader>
@@ -154,7 +166,11 @@ export function BotDialog({ children }: { children: React.ReactElement }) {
             </Field>
           </FieldGroup>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
