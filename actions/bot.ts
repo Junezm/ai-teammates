@@ -4,11 +4,11 @@ import { auth } from "@clerk/nextjs/server"
 import { revalidatePath } from "next/cache"
 
 import { db } from "@/db"
-import { bots } from "@/db/schema"
+import { bots, chatMembers, chats } from "@/db/schema"
 import { botFormSchema } from "@/db/validation"
 
 export type CreateBotResult =
-  | { success: true }
+  | { success: true; botId: string; chatId: string }
   | { success: false; error: string }
 
 export async function createBot(input: unknown): Promise<CreateBotResult> {
@@ -36,21 +36,39 @@ export async function createBot(input: unknown): Promise<CreateBotResult> {
   }
 
   try {
-    await db.insert(bots).values({
-      ...parsed.data,
-      userId,
+    const { botId, chatId } = await db.transaction(async (tx) => {
+      const [bot] = await tx
+        .insert(bots)
+        .values({
+          ...parsed.data,
+          userId,
+        })
+        .returning({ id: bots.id })
+
+      const [chat] = await tx
+        .insert(chats)
+        // Direct chats are unnamed; the UI shows the bot's name.
+        .values({ userId, kind: "direct" })
+        .returning({ id: chats.id })
+
+      await tx.insert(chatMembers).values({
+        chatId: chat.id,
+        botId: bot.id,
+      })
+
+      return { botId: bot.id, chatId: chat.id }
     })
+
+    revalidatePath("/")
+    return { success: true, botId, chatId }
   } catch (e) {
     const err = e as Error & { cause?: Error }
     console.error(
-      "[createBot] insert failed:",
+      "[createBot] transaction failed:",
       err.message,
       "| cause:",
       err.cause?.message
     )
     return { success: false, error: err.cause?.message ?? err.message }
   }
-
-  revalidatePath("/")
-  return { success: true }
 }
