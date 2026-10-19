@@ -24,3 +24,12 @@ export const botFormSchema = botInsertSchema.omit({
 })
 
 export type BotFormValues = z.infer<typeof botFormSchema>
+
+/**
+ * Update input — the same editable fields plus the id of the bot to change.
+ */
+export const botUpdateSchema = botFormSchema.extend({
+  id: z.string().min(1),
+})
+
+export type BotUpdateValues = z.infer<typeof botUpdateSchema>

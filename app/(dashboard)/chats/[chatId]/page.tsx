@@ -1,5 +1,19 @@
+import { notFound } from "next/navigation"
+
+import { ChatHeader } from "@/components/chat-header"
+import { getChat } from "@/queries/chats"
+
 export default async function ChatPage(props: PageProps<"/chats/[chatId]">) {
   const { chatId } = await props.params
+  const chat = await getChat(chatId)
 
-  return <p>{chatId}</p>
+  if (!chat) {
+    notFound()
+  }
+
+  return (
+    <div className="flex flex-1 flex-col">
+      <ChatHeader chat={chat} />
+    </div>
+  )
 }
