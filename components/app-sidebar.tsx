@@ -1,13 +1,32 @@
-import { UserButton } from "@clerk/nextjs"
+"use client"
 
+import { PlusIcon, UsersIcon } from "lucide-react"
+import { UserButton } from "@clerk/nextjs"
+import { formatDistanceToNow } from "date-fns"
+import { useState } from "react"
+
+import { ChatAvatar } from "@/components/chat-avatar"
+import { BotDialog } from "@/components/bot-dialog"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
   SidebarMenu,
+  SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import type { ChatListItem } from "@/queries/bots"
 
 // Mirrors SidebarMenuButton (size="lg") so the trigger matches the spacing and
 // design of other sidebar menu items. The `!` modifiers are required because
@@ -25,18 +44,83 @@ const userButtonAppearance = {
   },
 }
 
-export function AppSidebar() {
+export function AppSidebar({ chats }: { chats: ChatListItem[] }) {
+  const [botDialogOpen, setBotDialogOpen] = useState(false)
+
   return (
-    <Sidebar>
-      <SidebarContent />
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <UserButton showName appearance={userButtonAppearance} />
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
+    <>
+      <Sidebar>
+        <SidebarHeader className="flex-row justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-9 rounded-lg"
+                  aria-label="New chat"
+                />
+              }
+            >
+              <PlusIcon />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem onSelect={() => setBotDialogOpen(true)}>
+                <PlusIcon />
+                Create new bot
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <UsersIcon />
+                Create group chat
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarHeader>
+        <SidebarContent>
+          {chats.length > 0 ? (
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {chats.map((chat) => (
+                    <SidebarMenuItem key={chat.chatId}>
+                      <SidebarMenuButton size="lg">
+                        <ChatAvatar
+                          seed={chat.botAvatar}
+                          className="shrink-0 rounded-full"
+                        />
+                        <div className="grid flex-1 text-left leading-tight">
+                          <span className="flex items-center justify-between gap-2">
+                            <span className="truncate font-medium">
+                              {chat.botName}
+                            </span>
+                            <span className="shrink-0 text-xs text-sidebar-foreground/70">
+                              {formatDistanceToNow(chat.lastMessageAt)}
+                            </span>
+                          </span>
+                          {chat.lastMessagePreview ? (
+                            <span className="truncate text-xs text-sidebar-foreground/70">
+                              {chat.lastMessagePreview}
+                            </span>
+                          ) : null}
+                        </div>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ) : null}
+        </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <UserButton showName appearance={userButtonAppearance} />
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+        <SidebarRail />
+      </Sidebar>
+      <BotDialog open={botDialogOpen} onOpenChange={setBotDialogOpen} />
+    </>
   )
 }

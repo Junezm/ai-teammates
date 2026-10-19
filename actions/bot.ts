@@ -1,7 +1,7 @@
 "use server"
 
 import { auth } from "@clerk/nextjs/server"
-import { revalidatePath } from "next/cache"
+import { refresh, revalidatePath } from "next/cache"
 
 import { db } from "@/db"
 import { bots, chatMembers, chats } from "@/db/schema"
@@ -59,7 +59,11 @@ export async function createBot(input: unknown): Promise<CreateBotResult> {
       return { botId: bot.id, chatId: chat.id }
     })
 
-    revalidatePath("/")
+    // Mark the layout stale for other routes, then refetch the current route
+    // so the sidebar (which calls listUserChats() in the layout) shows the new
+    // bot in the same roundtrip.
+    revalidatePath("/", "layout")
+    refresh()
     return { success: true, botId, chatId }
   } catch (e) {
     const err = e as Error & { cause?: Error }

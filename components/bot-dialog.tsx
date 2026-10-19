@@ -43,8 +43,19 @@ function emptyBotForm(): BotFormValues {
   return { avatar: nanoid(), name: "", job: "", instructions: "" }
 }
 
-export function BotDialog({ children }: { children: React.ReactElement }) {
-  const [open, setOpen] = useState(false)
+export function BotDialog({
+  children,
+  open: openProp,
+  onOpenChange,
+}: {
+  // Uncontrolled: pass a trigger element. Controlled: pass open + onOpenChange.
+  children?: React.ReactElement
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}) {
+  const [internalOpen, setInternalOpen] = useState(false)
+  const isControlled = openProp !== undefined
+  const open = isControlled ? openProp : internalOpen
 
   const form = useForm<BotFormValues>({
     resolver: zodResolver(botFormSchema),
@@ -56,7 +67,10 @@ export function BotDialog({ children }: { children: React.ReactElement }) {
   // Every close path (submit, cancel, Esc, overlay) funnels through here so the
   // form never carries stale values into the next open.
   function handleOpenChange(next: boolean) {
-    setOpen(next)
+    if (!isControlled) {
+      setInternalOpen(next)
+    }
+    onOpenChange?.(next)
     if (!next) {
       form.reset(emptyBotForm())
     }
@@ -81,7 +95,7 @@ export function BotDialog({ children }: { children: React.ReactElement }) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger render={children} />
+      {children ? <DialogTrigger render={children} /> : null}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>New bot</DialogTitle>
