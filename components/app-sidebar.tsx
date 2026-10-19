@@ -4,6 +4,7 @@ import { PlusIcon, UsersIcon } from "lucide-react"
 import { UserButton } from "@clerk/nextjs"
 import { formatDistanceToNow } from "date-fns"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useState } from "react"
 
 import { ChatAvatar } from "@/components/chat-avatar"
@@ -51,6 +52,10 @@ const userButtonAppearance = {
 
 export function AppSidebar({ chats }: { chats: ChatListItem[] }) {
   const [botDialogOpen, setBotDialogOpen] = useState(false)
+  const pathname = usePathname()
+  const activeChatId = pathname.startsWith("/chats/")
+    ? decodeURIComponent(pathname.slice("/chats/".length))
+    : null
 
   return (
     <>
@@ -93,6 +98,7 @@ export function AppSidebar({ chats }: { chats: ChatListItem[] }) {
                     <SidebarMenuItem key={chat.chatId}>
                       <SidebarMenuButton
                         size="lg"
+                        isActive={chat.chatId === activeChatId}
                         tooltip={chat.botName}
                         render={<Link href={`/chats/${chat.chatId}`} />}
                       >
