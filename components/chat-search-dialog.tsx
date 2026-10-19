@@ -63,15 +63,18 @@ export function ChatSearchDialog({ chats }: { chats: ChatListItem[] }) {
   return (
     <>
       {/* Mirrors Input's default classes so it reads as a search field, while
-          keeping Button's ghost hover. */}
+          keeping Button's ghost hover. Collapsed, it becomes a plain icon
+          button like the others — no field border or fill. */}
       <Button
         variant="ghost"
-        className="h-8 w-full min-w-0 justify-start gap-2 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base font-normal text-muted-foreground md:text-sm dark:bg-input/30"
+        className="h-8 w-full min-w-0 justify-start gap-2 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base font-normal text-muted-foreground group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:px-0 md:text-sm dark:bg-input/30 dark:group-data-[collapsible=icon]:bg-transparent"
         onClick={() => setOpen(true)}
       >
         <SearchIcon />
-        <span className="flex-1 text-left">Search</span>
-        <Kbd>{modifier}K</Kbd>
+        <span className="flex-1 text-left group-data-[collapsible=icon]:hidden">
+          Search
+        </span>
+        <Kbd className="group-data-[collapsible=icon]:hidden">{modifier}K</Kbd>
       </Button>
       <CommandDialog
         open={open}

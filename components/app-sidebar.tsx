@@ -37,12 +37,15 @@ import type { ChatListItem } from "@/queries/bots"
 const userButtonAppearance = {
   elements: {
     rootBox: "w-full!",
+    // Collapses to a bare avatar with the sidebar (group-data targets the
+    // Sidebar root). `!` is required for the same reason as above.
     userButtonTrigger:
-      "flex h-12 w-full! items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm transition-[width,height,padding] outline-hidden hover:bg-sidebar-accent! hover:text-sidebar-accent-foreground! active:bg-sidebar-accent! active:text-sidebar-accent-foreground! focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-    userButtonBox: "flex w-full! min-w-0 items-center gap-2",
+      "flex h-12 w-full! items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm transition-[width,height,padding] outline-hidden group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:justify-center! group-data-[collapsible=icon]:p-0! hover:bg-sidebar-accent! hover:text-sidebar-accent-foreground! active:bg-sidebar-accent! active:text-sidebar-accent-foreground! focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+    userButtonBox:
+      "flex w-full! min-w-0 items-center gap-2 group-data-[collapsible=icon]:justify-center!",
     avatarBox: "size-6! shrink-0 rounded-full",
     userButtonOuterIdentifier:
-      "w-full! truncate text-sm font-medium text-sidebar-foreground!",
+      "w-full! truncate text-sm font-medium text-sidebar-foreground! group-data-[collapsible=icon]:hidden!",
   },
 }
 
@@ -51,16 +54,16 @@ export function AppSidebar({ chats }: { chats: ChatListItem[] }) {
 
   return (
     <>
-      <Sidebar>
+      <Sidebar collapsible="icon">
         <SidebarHeader>
-          <div className="flex justify-end">
+          <div className="flex justify-end group-data-[collapsible=icon]:justify-center">
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="size-9 rounded-lg"
+                    className="size-8 rounded-lg"
                     aria-label="New chat"
                   />
                 }
@@ -90,13 +93,14 @@ export function AppSidebar({ chats }: { chats: ChatListItem[] }) {
                     <SidebarMenuItem key={chat.chatId}>
                       <SidebarMenuButton
                         size="lg"
+                        tooltip={chat.botName}
                         render={<Link href={`/chats/${chat.chatId}`} />}
                       >
                         <ChatAvatar
                           seed={chat.botAvatar}
                           className="shrink-0 rounded-full"
                         />
-                        <div className="grid flex-1 text-left leading-tight">
+                        <div className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
                           <span className="flex items-center justify-between gap-2">
                             <span className="truncate font-medium">
                               {chat.botName}
