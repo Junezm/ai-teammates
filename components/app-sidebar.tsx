@@ -3,9 +3,11 @@
 import { PlusIcon, UsersIcon } from "lucide-react"
 import { UserButton } from "@clerk/nextjs"
 import { formatDistanceToNow } from "date-fns"
+import Link from "next/link"
 import { useState } from "react"
 
 import { ChatAvatar } from "@/components/chat-avatar"
+import { ChatSearchDialog } from "@/components/chat-search-dialog"
 import { BotDialog } from "@/components/bot-dialog"
 import { Button } from "@/components/ui/button"
 import {
@@ -50,31 +52,34 @@ export function AppSidebar({ chats }: { chats: ChatListItem[] }) {
   return (
     <>
       <Sidebar>
-        <SidebarHeader className="flex-row justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-9 rounded-lg"
-                  aria-label="New chat"
-                />
-              }
-            >
-              <PlusIcon />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem onSelect={() => setBotDialogOpen(true)}>
+        <SidebarHeader>
+          <div className="flex justify-end">
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-9 rounded-lg"
+                    aria-label="New chat"
+                  />
+                }
+              >
                 <PlusIcon />
-                Create new bot
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <UsersIcon />
-                Create group chat
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onSelect={() => setBotDialogOpen(true)}>
+                  <PlusIcon />
+                  Create new bot
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <UsersIcon />
+                  Create group chat
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <ChatSearchDialog chats={chats} />
         </SidebarHeader>
         <SidebarContent>
           {chats.length > 0 ? (
@@ -83,7 +88,10 @@ export function AppSidebar({ chats }: { chats: ChatListItem[] }) {
                 <SidebarMenu>
                   {chats.map((chat) => (
                     <SidebarMenuItem key={chat.chatId}>
-                      <SidebarMenuButton size="lg">
+                      <SidebarMenuButton
+                        size="lg"
+                        render={<Link href={`/chats/${chat.chatId}`} />}
+                      >
                         <ChatAvatar
                           seed={chat.botAvatar}
                           className="shrink-0 rounded-full"
