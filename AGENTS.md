@@ -102,3 +102,9 @@ derive from Drizzle tables with drizzle-zod. Reference implementation:
   results as possibly undefined.
 - If installing `@hookform/resolvers` fails on an `@typeschema` peer conflict,
   retry with `--legacy-peer-deps`; the conflicting integration is never used.
+
+<!-- TRIGGER.DEV SKILLS START -->
+## Trigger.dev agent skills
+
+This project has Trigger.dev agent skills installed in `.agents/skills/`. Before writing or changing Trigger.dev code (background tasks, scheduled tasks, realtime, or chat.agent AI agents), load the most relevant skill: `trigger-authoring-chat-agent`.
+<!-- TRIGGER.DEV SKILLS END -->

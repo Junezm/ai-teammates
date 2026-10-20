@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 
+import { Chat } from "@/components/chat"
 import { ChatHeader } from "@/components/chat-header"
 import { getChat } from "@/queries/chats"
 
@@ -12,8 +13,9 @@ export default async function ChatPage(props: PageProps<"/chats/[chatId]">) {
   }
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-1 flex-col overflow-hidden">
       <ChatHeader chat={chat} />
+      <Chat chatId={chat.chatId} />
     </div>
   )
 }
