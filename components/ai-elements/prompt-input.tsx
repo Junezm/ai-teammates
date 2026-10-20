@@ -78,6 +78,12 @@ import {
 // Helpers
 // ============================================================================
 
+// Base UI types every handler from the rendered element and widens it with
+// `preventBaseUIHandler`, so a plain `Event` no longer fits.
+type MenuSelectEvent = Parameters<
+  NonNullable<ComponentProps<typeof DropdownMenuItem>["onSelect"]>
+>[0];
+
 const convertBlobUrlToDataUrl = async (url: string): Promise<string | null> => {
   try {
     const response = await fetch(url);
@@ -421,7 +427,7 @@ export const PromptInputActionAddAttachments = ({
   const attachments = usePromptInputAttachments();
 
   const handleSelect = useCallback(
-    (e: Event) => {
+    (e: MenuSelectEvent) => {
       e.preventDefault();
       attachments.openFileDialog();
     },
@@ -449,7 +455,7 @@ export const PromptInputActionAddScreenshot = ({
   const attachments = usePromptInputAttachments();
 
   const handleSelect = useCallback(
-    async (event: Event) => {
+    async (event: MenuSelectEvent) => {
       onSelect?.(event);
       if (event.defaultPrevented) {
         return;
@@ -1209,6 +1215,10 @@ export type PromptInputSubmitProps = ComponentProps<typeof InputGroupButton> & {
   onStop?: () => void;
 };
 
+type SubmitClickEvent = Parameters<
+  NonNullable<ComponentProps<typeof InputGroupButton>["onClick"]>
+>[0];
+
 export const PromptInputSubmit = ({
   className,
   variant = "default",
@@ -1232,7 +1242,7 @@ export const PromptInputSubmit = ({
   }
 
   const handleClick = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
+    (e: SubmitClickEvent) => {
       if (isGenerating && onStop) {
         e.preventDefault();
         onStop();

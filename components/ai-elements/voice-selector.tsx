@@ -80,7 +80,9 @@ export const VoiceSelector = ({
 
   const [open, setOpen] = useControllableState({
     defaultProp: defaultOpen,
-    onChange: onOpenChange,
+    // The state helper only passes the value; Base UI's handler also receives
+    // event details, which don't exist when the state is set from here.
+    onChange: onOpenChange as ((open: boolean) => void) | undefined,
     prop: openProp,
   });
 

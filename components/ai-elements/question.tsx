@@ -5,7 +5,6 @@ import type {
   ComponentProps,
   FormEvent,
   HTMLAttributes,
-  MouseEvent,
   ReactNode,
 } from "react";
 
@@ -224,6 +223,14 @@ export type QuestionOptionProps = Omit<
   value: string;
 };
 
+// Base UI widens every handler with `preventBaseUIHandler`, so the click
+// handler has to be typed from the component rather than React's MouseEvent.
+type ButtonClickEvent = NonNullable<
+  ComponentProps<typeof Button>["onClick"]
+> extends (event: infer E) => unknown
+  ? E
+  : never;
+
 export const QuestionOption = ({
   children,
   className,
@@ -237,7 +244,7 @@ export const QuestionOption = ({
   const isSelected = question.selectedValues.includes(value);
   const role = question.selectionMode === "single" ? "radio" : "checkbox";
   const handleClick = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
+    (event: ButtonClickEvent) => {
       question.toggleValue(value);
       onClick?.(event);
     },
