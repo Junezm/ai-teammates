@@ -8,6 +8,7 @@ import { z } from "zod"
 import { db } from "@/db"
 import { bots, chatMembers, chats } from "@/db/schema"
 import { botFormSchema, botUpdateSchema } from "@/db/validation"
+import { createBotSandbox, deleteBotSandbox } from "@/lib/daytona"
 
 export type CreateBotResult =
   | { success: true; botId: string; chatId: string }
@@ -45,6 +46,18 @@ export async function createBot(input: unknown): Promise<CreateBotResult> {
     return { success: false, error: "Invalid bot details." }
   }
 
+  // Provision the sandbox before the transaction: it is an external call that
+  // cannot be rolled back, so a failure here leaves no rows behind. Nothing is
+  // run inside the sandbox — it is only created and its id recorded.
+  let sandboxId: string
+  try {
+    sandboxId = await createBotSandbox()
+  } catch (e) {
+    const err = e as Error
+    console.error("[createBot] sandbox creation failed:", err.message)
+    return { success: false, error: "Could not create the bot's sandbox." }
+  }
+
   try {
     const { botId, chatId } = await db.transaction(async (tx) => {
       const [bot] = await tx
@@ -52,6 +65,7 @@ export async function createBot(input: unknown): Promise<CreateBotResult> {
         .values({
           ...parsed.data,
           userId,
+          sandboxId,
         })
         .returning({ id: bots.id })
 
@@ -83,6 +97,16 @@ export async function createBot(input: unknown): Promise<CreateBotResult> {
       "| cause:",
       err.cause?.message
     )
+    // The bot row never landed, so nothing will ever reference this sandbox.
+    // Best effort: a failed cleanup is logged, not surfaced, since the create
+    // already failed for its own reason.
+    await deleteBotSandbox(sandboxId).catch((cleanupError: Error) => {
+      console.error(
+        "[createBot] sandbox cleanup failed:",
+        sandboxId,
+        cleanupError.message
+      )
+    })
     return { success: false, error: err.cause?.message ?? err.message }
   }
 }
@@ -168,10 +192,23 @@ export async function deleteBot(id: unknown): Promise<DeleteBotResult> {
     const deleted = await db
       .delete(bots)
       .where(and(eq(bots.id, parsed.data), eq(bots.userId, userId)))
-      .returning({ id: bots.id })
+      .returning({ id: bots.id, sandboxId: bots.sandboxId })
 
     if (deleted.length === 0) {
       return { success: false, error: "Bot not found." }
+    }
+
+    // The row is gone, so the sandbox would otherwise be orphaned. Deleting it
+    // is best effort: the bot is already deleted, and reporting failure here
+    // would invite a retry that can only answer "Bot not found."
+    if (deleted[0].sandboxId) {
+      await deleteBotSandbox(deleted[0].sandboxId).catch((e: Error) => {
+        console.error(
+          "[deleteBot] sandbox deletion failed:",
+          deleted[0].sandboxId,
+          e.message
+        )
+      })
     }
 
     revalidatePath("/", "layout")

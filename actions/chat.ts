@@ -1,10 +1,14 @@
 "use server"
 
 import { auth } from "@trigger.dev/sdk"
-import { chat, defaultStorage } from "@trigger.dev/sdk/ai"
+import {
+  chat,
+  defaultStorage,
+  type TranscriptLoadResult,
+} from "@trigger.dev/sdk/ai"
 
 import { getChat } from "@/queries/chats"
-import type { chatAgent } from "@/trigger/chat"
+import type { ChatUIMessage, chatAgent } from "@/trigger/chat"
 
 const startSession = chat.createStartSessionAction<typeof chatAgent>("chat")
 const loadTranscript = chat.createLoadTranscriptAction(defaultStorage)
@@ -34,7 +38,12 @@ export async function mintChatAccessToken(chatId: string) {
   })
 }
 
-export async function loadChatTranscript(params: { chatId: string; limit?: number }) {
+export async function loadChatTranscript(params: {
+  chatId: string
+  limit?: number
+}): Promise<TranscriptLoadResult<ChatUIMessage>> {
   await assertChatOwner(params.chatId)
-  return loadTranscript(params)
+  // The stored parts are this agent's typed tool parts; the loader is only
+  // declared against the plain UIMessage default.
+  return (await loadTranscript(params)) as TranscriptLoadResult<ChatUIMessage>
 }

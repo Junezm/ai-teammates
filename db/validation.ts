@@ -14,13 +14,14 @@ export const botInsertSchema = createInsertSchema(bots, {
 })
 
 /**
- * Client form schema — identity and timestamp fields are owned by the
- * server, never accepted from the client.
+ * Client form schema — identity, ownership, timestamp and sandbox fields are
+ * owned by the server, never accepted from the client.
  */
 export const botFormSchema = botInsertSchema.omit({
   id: true,
   userId: true,
   createdAt: true,
+  sandboxId: true,
 })
 
 export type BotFormValues = z.infer<typeof botFormSchema>
