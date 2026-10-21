@@ -8,6 +8,16 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
+# Branch policy: main only
+
+Everything stays on `main`. Do not change branches, and do not create them.
+
+- NEVER run `git checkout -b`, `git switch -c`, `git switch <branch>`, `git checkout <branch>`, `git branch <name>`, or `git worktree add`. The only permitted branch operation is the one that leaves `main` checked out.
+- NEVER push to any branch other than `main`, and never open a pull request from a side branch.
+- NEVER use worktree tooling that moves the session off `main` — no `EnterWorktree`, no `git worktree`, no equivalent.
+- If a task looks like it wants a branch — a risky change, an experiment, a review flow, a "safe" place to try something — do the work on `main` and commit it there anyway.
+- The single exception is an explicit request from the user, in their own words, for a branch. Inferring that a branch would be tidy is not a request; when in doubt, stay on `main`.
+
 # Development project: no backwards compatibility
 
 This is a development project. There is no backwards compatibility and the data is worthless. Prefer data loss: never backfill, migrate, or preserve existing rows, and never spend effort on keeping old data working. Every schema change means a clean slate.
